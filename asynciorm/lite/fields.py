@@ -5,10 +5,13 @@ from asynciorm.base.fields import (
     BaseTextField,
     BaseBooleanField,
     BaseDateTimeField,
+    BaseDateField,
+    BaseTimeField,
     BaseForeignKeyField,
     BaseFloatField,
 )
 
+__all__ = ['IntegerField', 'ForeignKeyField', 'AutoIncrementField', 'FloatField', 'CharField', 'TextField', 'BooleanField', 'DateTimeField', 'TimeField', 'DateField']
 
 class IntegerField(BaseIntegerField):
     pass
@@ -45,6 +48,18 @@ class BooleanField(BaseBooleanField):
 
 class DateTimeField(BaseDateTimeField):
 
+    @property
+    def _datatype(self):
+        return ' VARCHAR(255) '
+
+class TimeField(BaseTimeField):
+
+    @property
+    def _datatype(self):
+        return ' VARCHAR(255) '
+
+class DateField(BaseDateField):
+    
     @property
     def _datatype(self):
         return ' VARCHAR(255) '
