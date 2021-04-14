@@ -1,4 +1,4 @@
-from ..base.fields import (
+from asynciorm.base.fields import (
     BaseIntegerField,
     BaseAutoIncrementField,
     BaseCharField,

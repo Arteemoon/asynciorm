@@ -1,8 +1,8 @@
 from distutils.core import setup
 setup(
   name = 'asynciorm',         # How you named your package folder (MyLib)
-  packages = ['asynciorm'],   # Chose the same as "name"
-  version = '0.15',      # Start with a small number and increase it with every change you make
+  packages = ['asynciorm', 'asynciorm.lite', 'asynciorm.base'],   # Chose the same as "name"
+  version = '0.16',      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Asynchronus ORM',   # Give a short description about your library
   author = 'Arteemoon',                   # Type in your name
