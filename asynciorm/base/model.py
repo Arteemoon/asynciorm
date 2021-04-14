@@ -1,4 +1,4 @@
-from base.fields import Field
+from .fields import Field
 import re
 import inflect
 

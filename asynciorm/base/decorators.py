@@ -1,4 +1,4 @@
-from exceptions import ValidateError
+from ..exceptions import ValidateError
 
 
 def pre_validate_fields(func):

@@ -1,4 +1,4 @@
-from base.manager import BaseManager
+from ..base.manager import BaseManager
 
 
 class SQLiteManager(BaseManager):
