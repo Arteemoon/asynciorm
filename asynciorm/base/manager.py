@@ -12,7 +12,7 @@ class BaseManager(object):
     def __call__(self, model):
         self.model = object.__new__(model)
         self._names_fields = self.model._names_fields
-        self._filter_query = """ SELECT {distinct}  {columns} FROM {table_name} {filter_values} {order_by} {limit}"""
+        self._query = """ SELECT {distinct}  {columns} FROM {table_name} {filter_values} {order_by} {limit}"""
         self._query_params = {
             'filter_values': '',
             'distinct': '',
@@ -26,7 +26,7 @@ class BaseManager(object):
 
     @property
     def query(self):
-        return re.sub(' +', ' ', self._filter_query.format(**self._query_params))
+        return re.sub(' +', ' ', self._query.format(**self._query_params))
 
 
     @pre_validate_fields
@@ -36,17 +36,23 @@ class BaseManager(object):
         await self._connector.commit()
 
     async def delete(self):
-        self._filter_query = """ DELETE FROM {table_name} {filter_values}"""
+        self._query = """ DELETE FROM {table_name} {filter_values}"""
         print(self.query)
         await self._connector.execute(self.query)
         await self._connector.commit()
 
     async def update(self, **model_data):
-        self._filter_query = """ UPDATE {table_name} SET {columns} {filter_values}"""
+        self._query = """ UPDATE {table_name} SET {columns} {filter_values}"""
         data = "{key}='{value}'"
         self._query_params['columns'] = ', '.join([data.format(key=key + '_id', value=model_data.get(key)) if self.model._fields.get(key).is_fk else data.format(key=key, value=model_data.get(key)) for key in model_data.keys()])
         await self._connector.execute(self.query)
         await self._connector.commit()
+
+    async def aggregate(self, *funcs):
+        self._query_params['columns'] = ', '.join([func.sql() for func in funcs])
+        cursor = await self._connector.execute(self.query)
+        result = await cursor.fetchone()
+        return {f"{func.column_name}_{func.__class__.__name__.lower()}":result[key] for key, func in enumerate(funcs)}
 
     async def all(self):
         return [await self._get_query_model(self.model, self._names_fields, row) for row in
