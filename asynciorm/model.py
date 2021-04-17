@@ -8,6 +8,9 @@ engine = inflect.engine()
 class Model:
     __tablename__ = None
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>" 
+
     @property
     def _fields(self):
         return {key: value for key, value in type(self).__dict__.items() if isinstance(value, Field)}
