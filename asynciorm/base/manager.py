@@ -37,7 +37,6 @@ class BaseManager(object):
 
     async def delete(self):
         self._query = """ DELETE FROM {table_name} {filter_values}"""
-        print(self.query)
         await self._connector.execute(self.query)
         await self._connector.commit()
 
@@ -76,7 +75,6 @@ class BaseManager(object):
 
 
     async def execute(self):
-        print(self.query)
         return [await self._get_query_model(self.model, self._names_fields, row) for row in
                 await (await self._connector.execute(self.query)).fetchall()]
 
@@ -172,7 +170,6 @@ class BaseManager(object):
 
     async def _get_query_model(self, model, attrs, attr_values):
         model = copy.copy(model)
-        print(list(zip(attrs, attr_values)))
         for attr, attr_value in zip(attrs, attr_values):
             if attr.endswith('_id') and await self._is_related_field(model, attr.replace('_id', '')):
                 related_model = await self._get_related_model(model, attr.replace('_id', ''))
