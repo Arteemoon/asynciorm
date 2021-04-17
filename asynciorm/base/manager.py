@@ -1,7 +1,7 @@
 import copy
 import re
-from ..exceptions import DoesNotExist, MultipleObjectsReturned
-from ..base.decorators import pre_validate_fields
+from asynciorm.exceptions import DoesNotExist, MultipleObjectsReturned
+from asynciorm.base.decorators import pre_validate_fields
 
 
 class BaseManager(object):
