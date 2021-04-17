@@ -1,4 +1,4 @@
-from .fields import Field
+from asynciorm.base.fields import Field
 import re
 import inflect
 
