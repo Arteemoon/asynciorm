@@ -1,4 +1,4 @@
-from ..exceptions import ValidateError
+from asynciorm.exceptions import ValidateError
 
 
 def pre_validate_fields(func):
