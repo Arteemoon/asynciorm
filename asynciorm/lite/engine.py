@@ -9,7 +9,6 @@ class SQLiteEngine(BaseEngine):
 
     async def __init__(self, db_file, *args, **kwargs):
         self._db_file = db_file
-        self._debug_mode = kwargs.get('debug', False)   
         self._connector = await self._create_connector()
         self.query_manager = SQLiteManager(self._connector)
 
