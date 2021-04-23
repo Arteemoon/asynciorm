@@ -1,7 +1,6 @@
 import copy
 import re
 from asynciorm.exceptions import DoesNotExist, MultipleObjectsReturned
-from asynciorm.base.decorators import pre_validate_fields
 from asynciorm.base.fields import Field
 
 
@@ -229,4 +228,3 @@ class BaseManager(object):
                 'WHERE OR',
                 'WHERE').replace(
                 'WHERE AND', 'WHERE')
-            print(self._query_params['filter_values'])

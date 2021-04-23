@@ -1,9 +1,6 @@
 from abc import ABC
 import inspect
-from asynciorm.exceptions import ValidateError
-import types
 from datetime import datetime
-from decimal import Decimal
 
 CASCADE = ' CASCADE '
 SET_NULL = ' SET NULL '
@@ -76,7 +73,7 @@ class BaseAutoIncrementField(BaseIntegerField, ABC):
 
 
 class BaseFloatField(Field, ABC):
-    
+
     def sql_load(self, value):
         return float(value) if value is not None else value
 
@@ -145,8 +142,9 @@ class BaseForeignKeyField(Field, ABC):
         return super()._to_sql_column(column_name + '_id')
 
     def sql_dump(self, value):
-        return str(value) if isinstance(value, int) else str(getattr(value, [key for key, field in value._fields.items() if
-                                                                    field.is_primary_key][0]))
+        return str(value) if isinstance(value, int) else str(
+            getattr(value, [key for key, field in value._fields.items() if
+                            field.is_primary_key][0]))
 
     def _get_related_autoincrement_field_name(self):
         for field_name, field in self._related_model._fields.items():

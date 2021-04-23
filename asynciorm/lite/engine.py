@@ -1,7 +1,6 @@
 import asyncio
 import aiosqlite
 from asynciorm.base.engine import BaseEngine
-import logging
 from asynciorm.lite.manager import SQLiteManager
 
 

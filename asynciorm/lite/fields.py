@@ -51,14 +51,16 @@ class DateTimeField(BaseDateTimeField):
     def _datatype(self):
         return ' VARCHAR(255) '
 
+
 class TimeField(BaseTimeField):
 
     @property
     def _datatype(self):
         return ' VARCHAR(255) '
 
+
 class DateField(BaseDateField):
-    
+
     @property
     def _datatype(self):
         return ' VARCHAR(255) '

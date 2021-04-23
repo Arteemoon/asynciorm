@@ -5,7 +5,6 @@ asynciorm/aggregations.py
 asynciorm/exceptions.py
 asynciorm/model.py
 asynciorm/base/__init__.py
-asynciorm/base/decorators.py
 asynciorm/base/engine.py
 asynciorm/base/fields.py
 asynciorm/base/manager.py
