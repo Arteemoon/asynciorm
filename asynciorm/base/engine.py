@@ -33,8 +33,9 @@ class BaseEngine(aobject):
             ', '.join(sql_columns).replace("  ", " "))
         await self._connector.execute(query)
 
-    async def drop_table(self, tablename):
-        await self._connector.execute(f""" DROP TABLE IF NOT EXISTS {tablename}""")
+    async def drop_table(self, model):
+        model = object.__new__(model)
+        await self._connector.execute(f""" DROP TABLE IF EXISTS {model.table_name}""")
 
     async def _create_connector(self):
         raise NotImplementedError(self._no_implement_message)

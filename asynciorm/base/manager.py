@@ -2,6 +2,7 @@ import copy
 import re
 from asynciorm.exceptions import DoesNotExist, MultipleObjectsReturned
 from asynciorm.base.decorators import pre_validate_fields
+from asynciorm.base.fields import Field
 
 
 class BaseManager(object):
@@ -28,8 +29,6 @@ class BaseManager(object):
     def query(self):
         return re.sub(' +', ' ', self._query.format(**self._query_params))
 
-
-    @pre_validate_fields
     async def create(self, **model_data):
         query = f""" INSERT INTO {self.model.table_name} ( {await self._get_insert_column_name(**model_data)} ) VALUES ( {await self._get_insert_data(**model_data)} )"""
         await self._connector.execute(query)
@@ -43,7 +42,9 @@ class BaseManager(object):
     async def update(self, **model_data):
         self._query = """ UPDATE {table_name} SET {columns} {filter_values}"""
         data = "{key}='{value}'"
-        self._query_params['columns'] = ', '.join([data.format(key=key + '_id', value=model_data.get(key)) if self.model._fields.get(key).is_fk else data.format(key=key, value=model_data.get(key)) for key in model_data.keys()])
+        self._query_params['columns'] = ', '.join([data.format(key=key + '_id',
+                                                               value=model_data.get(key)) if self.model._fields.get(
+            key).is_fk else data.format(key=key, value=model_data.get(key)) for key in model_data.keys()])
         await self._connector.execute(self.query)
         await self._connector.commit()
 
@@ -51,7 +52,7 @@ class BaseManager(object):
         self._query_params['columns'] = ', '.join([func.sql() for func in funcs])
         cursor = await self._connector.execute(self.query)
         result = await cursor.fetchone()
-        return {f"{func.column_name}_{func.__class__.__name__.lower()}":result[key] for key, func in enumerate(funcs)}
+        return {f"{func.column_name}_{func.__class__.__name__.lower()}": result[key] for key, func in enumerate(funcs)}
 
     async def all(self):
         return [await self._get_query_model(self.model, self._names_fields, row) for row in
@@ -73,11 +74,9 @@ class BaseManager(object):
         except (DoesNotExist, MultipleObjectsReturned):
             return None
 
-
     async def execute(self):
         return [await self._get_query_model(self.model, self._names_fields, row) for row in
                 await (await self._connector.execute(self.query)).fetchall()]
-
 
     async def first(self):
         self.limit(1)
@@ -100,7 +99,7 @@ class BaseManager(object):
     def filter(self, **params):
         self._filter_options(**params)
         return self
-    
+
     def distinct(self, column):
         self._query_params['distinct'] = f' DISTINCT {column} '
         return self
@@ -166,7 +165,7 @@ class BaseManager(object):
         return fk_field._related_model
 
     async def _is_related_field(self, model, attr):
-        return model._fields.get(attr).is_fk
+        return model._fields.get(attr, Field()).is_fk
 
     async def _get_query_model(self, model, attrs, attr_values):
         model = copy.copy(model)
@@ -177,7 +176,8 @@ class BaseManager(object):
                 related_object = await self._get_query_model(related_model, names,
                                                              await self._get(related_model, names, id=attr_value))
                 setattr(model, attr.replace('_id', ''), related_object)
-            setattr(model, attr, model._fields.get(attr).sql_load(attr_value) if model._fields.get(attr) else attr_value)
+            setattr(model, attr,
+                    model._fields.get(attr).sql_load(attr_value) if model._fields.get(attr) else attr_value)
         return model
 
     async def _get_query_filter_params(self, **params):
@@ -211,9 +211,7 @@ class BaseManager(object):
         return ', '.join(column_names)
 
     def _filter_options(self, **params):
-        first_call = False
         if not self._query_params['filter_values']:
-            first_call = True
             self._query_params['filter_values'] = 'WHERE  '
         for param_name, param_value in params.items():
             custom_query_params = param_name.split('__')
@@ -225,9 +223,10 @@ class BaseManager(object):
                                                'or_') else '_' + custom_query_param, None)
                     if query_filter:
                         query_filter(param_name, param_value, or_=custom_query_param.startswith('or_'))
-                    if first_call:
-                        self._query_params['filter_values'] = self._query_params['filter_values'].replace(' OR ',
-                                                                                                          ' ').replace(
-                            ' AND ', ' ')
             else:
-                self._query_params['filter_values'] += f" {' AND ' if not first_call else ''} {param_name}='{param_value}' "
+                self._query_params['filter_values'] += f" AND {param_name}='{param_value}' "
+            self._query_params['filter_values'] = re.sub(' +', ' ', self._query_params['filter_values']).replace(
+                'WHERE OR',
+                'WHERE').replace(
+                'WHERE AND', 'WHERE')
+            print(self._query_params['filter_values'])
