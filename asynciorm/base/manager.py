@@ -28,39 +28,46 @@ class BaseManager(object):
     def query(self):
         return re.sub(' +', ' ', self._query.format(**self._query_params))
 
+    async def fetchone(self):
+        raise NotImplementedError
+
+    async def fetchall(self):
+        raise NotImplementedError
+
+    async def execute(self):
+        raise NotImplementedError
+
+    async def fetch_row(self):
+        raise NotImplementedError
+
     async def create(self, **model_data):
-        query = f""" INSERT INTO {self.model.table_name} ( {await self._get_insert_column_name(**model_data)} ) VALUES ( {await self._get_insert_data(**model_data)} )"""
-        await self._connector.execute(query)
-        await self._connector.commit()
+        self._query = f""" INSERT INTO {self.model.table_name} ( {await self._get_insert_column_name(**model_data)} ) VALUES ( {await self._get_insert_data(**model_data)} )"""
+        await self.execute()
 
     async def delete(self):
         self._query = """ DELETE FROM {table_name} {filter_values}"""
-        await self._connector.execute(self.query)
-        await self._connector.commit()
+        await self.execute()
 
     async def update(self, **model_data):
         self._query = """ UPDATE {table_name} SET {columns} {filter_values}"""
         data = "{key}='{value}'"
         self._query_params['columns'] = ', '.join([data.format(key=key + '_id',
                                                                value=model_data.get(key)) if self.model._fields.get(
-            key).is_fk else data.format(key=key, value=model_data.get(key)) for key in model_data.keys()])
-        await self._connector.execute(self.query)
-        await self._connector.commit()
+            key, Field()).is_fk else data.format(key=key, value=model_data.get(key)) for key in model_data.keys()])
+        await self.execute()
 
     async def aggregate(self, *funcs):
         self._query_params['columns'] = ', '.join([func.sql() for func in funcs])
-        cursor = await self._connector.execute(self.query)
-        result = await cursor.fetchone()
+        result = await self.fetchone()
         return {f"{func.column_name}_{func.__class__.__name__.lower()}": result[key] for key, func in enumerate(funcs)}
 
     async def all(self):
         return [await self._get_query_model(self.model, self._names_fields, row) for row in
-                await (await self._connector.execute(self.query)).fetchall()]
+                await self.fetchall()]
 
     async def get(self, **params):
         self._filter_options(**params)
-        cursor = await self._connector.execute(self.query)
-        result = await cursor.fetchall()
+        result = await self.fetchall()
         if not result:
             raise DoesNotExist
         elif len(result) > 1:
@@ -73,13 +80,13 @@ class BaseManager(object):
         except (DoesNotExist, MultipleObjectsReturned):
             return None
 
-    async def execute(self):
+    async def fetch(self):
         return [await self._get_query_model(self.model, self._names_fields, row) for row in
-                await (await self._connector.execute(self.query)).fetchall()]
+        await self.fetchall()]
 
     async def first(self):
         self.limit(1)
-        data = await (await self._connector.execute(self.query)).fetchone()
+        data = await self.fetchone()
         if not data:
             raise DoesNotExist
         return await self._get_query_model(self.model, self._names_fields, data)
@@ -87,13 +94,13 @@ class BaseManager(object):
     async def last(self):
         self.limit(1)
         self.order_by(f"-{[field_name for field_name, field in self.model._fields.items() if field.is_primary_key][0]}")
-        data = await (await self._connector.execute(self.query)).fetchone()
+        data = await self.fetchone()
         if not data:
             raise DoesNotExist
         return await self._get_query_model(self.model, self._names_fields, data)
 
     async def row(self, query):
-        return await (await self._connector.execute(query)).fetchall()
+        return await self.fetch_row(query)
 
     def filter(self, **params):
         self._filter_options(**params)
