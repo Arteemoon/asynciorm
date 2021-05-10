@@ -9,7 +9,7 @@ class Model:
     __tablename__ = None
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}>"
+        return f"<{self.__class__.__name__}: {self.id}>"
 
     @property
     def _fields(self):
