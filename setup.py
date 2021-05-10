@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='asynciorm',  # How you named your package folder (MyLib)
-    packages=['asynciorm', 'asynciorm.lite', 'asynciorm.base'],  # Chose the same as "name"
+    packages=['asynciorm', 'asynciorm.lite', 'asynciorm.base', 'asynciorm.postgres'],  # Chose the same as "name"
     version='0.20.0',  # Start with a small number and increase it with every change you make
     license='MIT',  # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     description='Asynchronus ORM',  # Give a short description about your library
@@ -13,7 +13,8 @@ setup(
     keywords=['orm', 'python', 'asyncio'],  # Keywords that define your package best
     install_requires=[  # I get to this in a second
         'aiosqlite',
-        'inflect'
+        'inflect',
+        'asyncpg'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
